@@ -1,0 +1,22 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Node (only if you add tooling later)
+node_modules/
+npm-debug.log*
+
+# Local secrets — never commit a real OAuth client id override
+manifest.local.json
+
+# Packaged builds
+*.zip
+*.crx
+*.pem
+
+# Python
+__pycache__/
+*.pyc

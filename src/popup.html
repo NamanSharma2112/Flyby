@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>Flyby</title>
+  </head>
+  <body>
+    <header class="hero">
+      <img class="hero__icon" src="../icons/icon48.png" alt="" />
+      <div class="hero__text">
+        <h1>Flyby</h1>
+        <p>Airplane reminders for your calendar</p>
+      </div>
+      <label class="switch" title="Turn reminders on or off">
+        <input type="checkbox" id="enabled" />
+        <span class="switch__track"><span class="switch__thumb"></span></span>
+      </label>
+    </header>
+
+    <main>
+      <!-- Connection -->
+      <section class="card" id="connCard">
+        <div class="conn">
+          <span class="dot" id="connDot"></span>
+          <div class="conn__text">
+            <strong id="connTitle">Not connected</strong>
+            <small id="connSub">Connect your Google Calendar to get started.</small>
+          </div>
+        </div>
+        <button class="btn btn--primary" id="connectBtn">Connect Google Calendar</button>
+        <button class="btn btn--ghost hidden" id="disconnectBtn">Disconnect</button>
+      </section>
+
+      <!-- Lead times -->
+      <section class="card">
+        <div class="card__label">Fly the plane</div>
+        <div class="chips" id="leadChips">
+          <label class="chip"><input type="checkbox" value="1" /><span>1 min before</span></label>
+          <label class="chip"><input type="checkbox" value="5" /><span>5 min before</span></label>
+          <label class="chip"><input type="checkbox" value="10" /><span>10 min before</span></label>
+          <label class="chip"><input type="checkbox" value="15" /><span>15 min before</span></label>
+          <label class="chip"><input type="checkbox" value="30" /><span>30 min before</span></label>
+        </div>
+        <p class="hint hidden" id="leadHint">Pick at least one lead time.</p>
+      </section>
+
+      <!-- Options -->
+      <section class="card row">
+        <div>
+          <strong class="row__title">Desktop notification backup</strong>
+          <small class="row__sub">Used when the current tab can't host the plane.</small>
+        </div>
+        <label class="switch switch--sm" title="Backup notification">
+          <input type="checkbox" id="notifyBackup" />
+          <span class="switch__track"><span class="switch__thumb"></span></span>
+        </label>
+      </section>
+
+      <!-- Upcoming -->
+      <section class="card" id="upcomingCard">
+        <div class="card__label">Coming up</div>
+        <ul class="events" id="events"></ul>
+        <p class="hint" id="eventsEmpty">Nothing in the next 12 hours.</p>
+      </section>
+
+      <button class="btn btn--test" id="testBtn">✈️ Send a test flight</button>
+      <p class="footnote" id="footnote"></p>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
