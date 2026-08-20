@@ -5,11 +5,11 @@
 ![Flyby flying a reminder across a web page](docs/demo.gif)
 
 Flyby is a **Manifest V3 Chrome/Chromium extension**. It watches your Google
-Calendar and, a few minutes before a timed event begins, flies a little paper
-airplane towing a banner with the meeting title across whatever page you're
-looking at. It's a friendlier, harder-to-ignore nudge than a toast that vanishes
-in three seconds — but it never blocks your clicks and never touches the page's
-own styling.
+Calendar and, a few minutes before a timed event begins, flies a little
+airliner towing a fabric banner with the meeting title across whatever page
+you're looking at. It's a friendlier, harder-to-ignore nudge than a toast that
+vanishes in three seconds — but it never blocks your clicks and never touches
+the page's own styling.
 
 If the tab you're on can't host the plane (a `chrome://` page, the Web Store,
 etc.), Flyby quietly falls back to a desktop notification instead.
@@ -18,9 +18,15 @@ etc.), Flyby quietly falls back to a desktop notification instead.
 
 ## Features
 
-- 🛩️ **Banner-towing airplane** rendered in a **Shadow DOM**, so it can't collide
-  with the page's CSS and the page can't hide it. It's `pointer-events: none`, so
-  your clicks pass straight through.
+- 🛩️ **A realistic little airliner** (fuselage, cockpit window, window row, swept
+  wing, engine, tail fin) towing a **fabric banner** — all drawn as inline SVG in
+  a **Shadow DOM**, so it can't collide with the page's CSS and the page can't
+  hide it. It's `pointer-events: none`, so your clicks pass straight through.
+- 🌬️ **Real-ish banner physics** — a small `requestAnimationFrame` loop flutters
+  the banner as a *traveling wave* (more whip toward the free end), sags it under
+  gravity, and couples it to the plane's gentle bob and pitch. The red message
+  rides the wave via an SVG `textPath`, and auto-fits (short titles centered and
+  large, long ones compressed and clipped with an ellipsis).
 - ⏱️ **Pick your lead times** — 1, 5, 10, 15 and/or 30 minutes before an event.
   Choose more than one and the plane flies at each.
 - 🔔 **Desktop-notification fallback** when the active tab is a restricted page.
@@ -122,8 +128,11 @@ icons/                 extension icons (regenerate with tools/make_icons.py)
   configured lead time, fires the plane exactly once per event/lead-time (tracked
   in `chrome.storage`).
 - **Rendering** happens by injecting `content.js` into the active tab and passing
-  it the title + subtitle. The overlay lives entirely inside a Shadow DOM and
-  removes itself when the flight ends.
+  it the title. The plane + banner are inline SVG inside a Shadow DOM; a
+  `requestAnimationFrame` loop rebuilds the rippling banner path each frame and
+  the overlay removes itself when the flight ends. (Under
+  `prefers-reduced-motion` it fades in gently instead of flying across, with the
+  physics loop switched off.)
 - **Permissions:** `identity` (OAuth), `storage` (settings + de-dupe), `alarms`
   (polling), `scripting` (draw on the active tab), `notifications` (fallback).
   Host permissions: `https://www.googleapis.com/*` (the API) and `<all_urls>` (to
@@ -144,8 +153,9 @@ token and revokes the grant.
 | --- | --- |
 | Default lead times | popup chips, or `DEFAULT_SETTINGS` in `src/background.js` |
 | Which calendar | `CALENDAR_ID` in `src/background.js` (default `"primary"`) |
-| Plane / banner look | `STYLE` and `PLANE_SVG` in `src/content.js` |
-| Flight speed & lanes | `flyby-cross` duration and `LANES` in `src/content.js` |
+| Plane / banner look | `PLANE` markup and the `<defs>` gradients in `src/content.js` |
+| Banner flutter / sag | `AMP`, `OMEGA`, `K` (and `baseline()`) in `src/content.js` |
+| Flight speed & lanes | `FLIGHT_S` and `LANES` in `src/content.js` |
 | Icons | edit and rerun `python3 tools/make_icons.py` |
 
 ## Browser support
