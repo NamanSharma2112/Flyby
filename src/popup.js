@@ -176,12 +176,18 @@ function wire() {
     busy(btn, false);
     const note = $("footnote");
     note.classList.remove("err");
-    if (resp && resp.ok) {
-      note.textContent = "Look at your page — here it comes!";
+    const shown = resp && resp.shown;
+    if (shown === "plane") {
+      note.textContent = "✈️ Look at your page — here it comes!";
+    } else if (shown === "notification") {
+      note.textContent =
+        "This browser page can't show the plane — I sent a notification. Open a normal website tab to see it fly.";
+      note.classList.add("err");
     } else {
-      note.textContent = "Couldn't draw on this page. Try a regular website tab.";
+      note.textContent = "Couldn't show it here. Open a normal website tab and try again.";
       note.classList.add("err");
     }
+    checkActiveTab();
   });
 }
 
@@ -209,8 +215,22 @@ function setupOnboarding() {
   });
 }
 
+// Warn if the currently visible tab is a page Chrome won't let us draw on, so
+// the user knows why a test flight (or reminder) would only show a notification.
+async function checkActiveTab() {
+  try {
+    const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    const url = (tabs && tabs[0] && tabs[0].url) || "";
+    const injectable = /^(https?|file):/i.test(url);
+    $("tabHint").classList.toggle("hidden", injectable);
+  } catch (_) {
+    /* tabs unavailable — leave the hint hidden */
+  }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   wire();
   setupOnboarding();
+  checkActiveTab();
   render(await send("getState"));
 });

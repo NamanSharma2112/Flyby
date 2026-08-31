@@ -278,13 +278,15 @@ async function showFlyby(data) {
         files: ["src/content.js"],
       });
       await chrome.tabs.sendMessage(tab.id, { type: "FLYBY", payload });
-      return true;
+      return "plane";
     } catch (_) {
       /* restricted frame or no receiver — fall back to a notification */
     }
   }
 
-  return notifyFallback(payload);
+  // The visible tab is a page Chrome won't let any extension draw on
+  // (chrome:// pages, the New Tab page, the Web Store, PDFs). Notify instead.
+  return (await notifyFallback(payload)) ? "notification" : "none";
 }
 
 async function notifyFallback(payload) {
@@ -409,9 +411,11 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
           sendResponse({ ok: true, settings });
           break;
         }
-        case "test":
-          sendResponse({ ok: await testFlyby() });
+        case "test": {
+          const shown = await testFlyby();
+          sendResponse({ ok: shown !== "none", shown });
           break;
+        }
         case "refresh":
           await poll().catch(() => {});
           sendResponse(await getState());

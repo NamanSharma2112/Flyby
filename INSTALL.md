@@ -22,8 +22,14 @@ you're ready.
 
 ### See it work right now (no Google account needed)
 
-Click the Flyby icon → **✈️ Send a test flight**. A little airliner flies across
-your current tab towing a banner. That confirms Flyby is installed and working.
+First, **be on a normal website tab** — open something like `example.com`. Then
+click the Flyby icon → **✈️ Send a test flight**. A little airliner flies across
+the page towing a banner.
+
+> The plane draws on **web pages**, not on Chrome's own pages (the New Tab page,
+> `chrome://…` pages, the Web Store, or PDFs). On those, no extension is allowed
+> to draw, so Flyby shows a **desktop notification** instead. The popup warns you
+> when the current tab is one of these.
 
 ---
 
