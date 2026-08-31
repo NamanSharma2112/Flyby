@@ -6,8 +6,8 @@
 
 Flyby is a **Manifest V3 Chrome/Chromium extension**. It watches your Google
 Calendar and, a few minutes before a timed event begins, flies a little
-airliner towing a fabric banner with the meeting title across whatever page
-you're looking at. It's a friendlier, harder-to-ignore nudge than a toast that
+airliner towing a fabric banner with the meeting name and how soon it starts
+across whatever page you're looking at. It's a friendlier, harder-to-ignore nudge than a toast that
 vanishes in three seconds — but it never blocks your clicks and never touches
 the page's own styling.
 
@@ -24,9 +24,10 @@ etc.), Flyby quietly falls back to a desktop notification instead.
   hide it. It's `pointer-events: none`, so your clicks pass straight through.
 - 🌬️ **Real-ish banner physics** — a small `requestAnimationFrame` loop flutters
   the banner as a *traveling wave* (more whip toward the free end), sags it under
-  gravity, and couples it to the plane's gentle bob and pitch. The red message
-  rides the wave via an SVG `textPath`, and auto-fits (short titles centered and
-  large, long ones compressed and clipped with an ellipsis).
+  gravity, and couples it to the plane's gentle bob and pitch. The red message —
+  the event name plus a small `· in 10 min` tag — rides the wave via an SVG
+  `textPath`, and auto-fits (short titles centered and large, long ones
+  compressed and clipped with an ellipsis, with the time tag always kept).
 - ⏱️ **Pick your lead times** — 1, 5, 10, 15 and/or 30 minutes before an event.
   Choose more than one and the plane flies at each.
 - 🔔 **Desktop-notification fallback** when the active tab is a restricted page.

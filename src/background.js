@@ -258,6 +258,7 @@ function subtitleFor(data) {
 async function showFlyby(data) {
   const payload = {
     title: data.title,
+    minutes: data.minutes,
     subtitle: subtitleFor(data),
     location: data.location || "",
   };

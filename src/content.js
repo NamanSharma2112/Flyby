@@ -124,7 +124,7 @@
       </g>
       <text id="fb-text" fill="#e0322c" font-family="'Arial Narrow', Arial, Helvetica, sans-serif"
             font-weight="700" letter-spacing=".4">
-        <textPath id="fb-textpath" href="#fb-center" xlink:href="#fb-center" startOffset="0"></textPath>
+        <textPath id="fb-textpath" href="#fb-center" xlink:href="#fb-center" startOffset="0"><tspan id="fb-ttl"></tspan><tspan id="fb-tm" font-size="72%" fill="#b23b34"></tspan></textPath>
       </text>
     </svg>`;
 
@@ -170,7 +170,18 @@
 
   function render(payload) {
     let title = String(payload && payload.title ? payload.title : "Upcoming event").trim();
-    if (title.length > 46) title = title.slice(0, 45).trimEnd() + "…";
+    if (title.length > 44) title = title.slice(0, 43).trimEnd() + "…";
+
+    // Short "when" tag appended after the title, so the banner carries the whole
+    // reminder ("Design sync with the team · in 10 min").
+    let timeText = "";
+    const mins = payload && payload.minutes;
+    if (typeof mins === "number" && isFinite(mins)) {
+      timeText = mins <= 1 ? "now" : `in ${Math.round(mins)} min`;
+    } else if (payload && payload.subtitle) {
+      const m = String(payload.subtitle).match(/(\d+)/);
+      timeText = m ? `in ${m[1]} min` : "";
+    }
 
     const host = document.createElement("div");
     host.setAttribute("data-flyby", "");
@@ -205,8 +216,8 @@
     const tow2 = root.getElementById("fb-tow2");
     const plane = root.getElementById("fb-plane");
     const textEl = root.getElementById("fb-text");
-    const textPath = root.getElementById("fb-textpath");
-    textPath.textContent = title;
+    root.getElementById("fb-ttl").textContent = title;
+    root.getElementById("fb-tm").textContent = timeText ? "   ·   " + timeText : "";
 
     const centerLen = X_ATTACH - 16 - (X_FREE + 34);
 
