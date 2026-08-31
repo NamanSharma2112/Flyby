@@ -48,6 +48,8 @@ etc.), Flyby quietly falls back to a desktop notification instead.
 
 ## Install (load unpacked)
 
+> **Just want to use it?** See **[INSTALL.md](INSTALL.md)** for a short, plain-language walkthrough, or open the built-in guide from the popup (**Open the step-by-step guide**). The steps below are the same thing in detail.
+
 Flyby talks directly to Google's Calendar API, so you supply your own **free**
 OAuth client ID. It's a one-time setup, ~5 minutes.
 
@@ -114,12 +116,17 @@ the plane cross your current tab right away.
 ## How it works
 
 ```
-manifest.json         MV3 manifest, OAuth config, permissions
-src/background.js      service worker — OAuth, 1-min calendar poll, fires the plane
-src/content.js         injected on demand — draws & animates the plane (Shadow DOM)
-src/popup.html/.js/.css  settings, connection, upcoming events, test button
-icons/                 extension icons (regenerate with tools/make_icons.py)
+manifest.json          MV3 manifest, OAuth config, permissions
+src/background.js       service worker — OAuth, 1-min calendar poll, fires the plane
+src/content.js          injected on demand — draws & animates the plane (Shadow DOM)
+src/popup.html/.js/.css settings, connection, onboarding, upcoming events, test button
+src/setup.html/.js      the built-in step-by-step setup guide (opened from the popup)
+icons/                  extension icons (regenerate with tools/make_icons.py)
+tools/build_zip.py      package a load-unpacked-ready flyby-<version>.zip
 ```
+
+**Build a distributable zip:** `python3 tools/build_zip.py` → `flyby-<version>.zip`
+(unzips to a `flyby/` folder you can Load unpacked).
 
 - **Auth** uses `chrome.identity.getAuthToken`, so Chrome manages and refreshes
   the token for background polling. A `401` transparently clears the cached token

@@ -364,6 +364,11 @@ async function ensureAlarm() {
   }
 }
 
+// Guarantee the poll alarm exists whenever the service worker starts, in
+// addition to onInstalled/onStartup — belt and suspenders so reminders never
+// silently stop if a lifecycle event is missed.
+ensureAlarm().catch(() => {});
+
 chrome.runtime.onInstalled.addListener(async () => {
   await setSettings({}); // materialize defaults
   await ensureAlarm();

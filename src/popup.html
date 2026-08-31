@@ -20,6 +20,26 @@
     </header>
 
     <main>
+      <!-- One-time setup (shown only until a Client ID is configured) -->
+      <section class="card setup hidden" id="setupCard">
+        <div class="card__label">Finish setup · one time</div>
+        <p class="setup__lead">To read your calendar, Flyby needs a free Google
+          <b>Client ID</b>. Takes about 5 minutes.</p>
+        <ol class="setup__steps">
+          <li>Copy this extension's ID:
+            <div class="copyrow">
+              <code id="extId">…</code>
+              <button class="mini" id="copyId" type="button">Copy</button>
+            </div>
+          </li>
+          <li>Create a Google OAuth <b>Client ID</b> (type: <b>Chrome Extension</b>)
+            and paste the ID above into it.</li>
+          <li>Put that Client ID into <code>manifest.json</code>, then reload Flyby.</li>
+        </ol>
+        <button class="btn btn--primary" id="guideBtn" type="button">Open the step-by-step guide</button>
+        <p class="setup__tip">Meanwhile, try <b>✈️ Send a test flight</b> below — no setup needed.</p>
+      </section>
+
       <!-- Connection -->
       <section class="card" id="connCard">
         <div class="conn">

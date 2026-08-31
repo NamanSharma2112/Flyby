@@ -187,7 +187,30 @@ function wire() {
 
 // ---- boot ------------------------------------------------------------------
 
+function setupOnboarding() {
+  const manifest = chrome.runtime.getManifest();
+  const cid = (manifest.oauth2 && manifest.oauth2.client_id) || "";
+  const needsSetup = !cid || /^REPLACE_WITH/i.test(cid);
+
+  $("setupCard").classList.toggle("hidden", !needsSetup);
+  $("connCard").classList.toggle("hidden", needsSetup);
+  if (needsSetup) $("extId").textContent = chrome.runtime.id;
+
+  $("copyId").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(chrome.runtime.id);
+      const b = $("copyId");
+      b.textContent = "Copied!";
+      setTimeout(() => (b.textContent = "Copy"), 1200);
+    } catch (_) {}
+  });
+  $("guideBtn").addEventListener("click", () => {
+    chrome.tabs.create({ url: chrome.runtime.getURL("src/setup.html") });
+  });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   wire();
+  setupOnboarding();
   render(await send("getState"));
 });
