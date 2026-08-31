@@ -77,25 +77,41 @@
 
   const PLANE = `
     <g id="fb-plane">
-      <path d="M 748,104 L 720,150 L 744,150 L 768,106 Z" fill="#c6d2e0"/>
-      <path d="M 620,100 L 585,91 L 583,98 L 620,107 Z" fill="#cbd6e4"/>
-      <path d="M 632,89 L 583,52 L 606,54 L 650,89 Z" fill="url(#fb-metal)" stroke="#b4c1d1" stroke-width=".6"/>
+      <!-- far wing (behind the fuselage) -->
+      <path d="M 762,106 L 702,150 L 722,151 L 782,109 Z" fill="#c2cfe0"/>
+      <!-- horizontal stabilizer -->
+      <path d="M 626,101 L 585,92 L 584,99 L 626,108 Z" fill="#ccd7e5"/>
+      <!-- vertical tail fin (blue livery) -->
+      <path d="M 634,90 L 588,50 L 612,52 L 656,90 Z" fill="url(#fb-tail)"/>
+      <path d="M 634,90 L 606,60 L 612,61 L 650,90 Z" fill="#ffffff" opacity=".15"/>
+      <!-- fuselage -->
       <path d="M 618,86
                C 678,81 748,81 806,86
                C 836,88 852,95 852,105
                C 852,114 836,120 806,122
                C 748,127 678,127 622,122
                L 606,114 C 600,110 600,100 606,95 Z"
-            fill="url(#fb-fus)" stroke="#c0cad8" stroke-width=".7"/>
-      <path d="M 828,96 C 838,97 845,100 847,104 L 833,104 C 831,100 829,98 825,97 Z" fill="#93a8c1"/>
-      <line x1="666" y1="98" x2="812" y2="98" stroke="#8398b2" stroke-width="3" stroke-linecap="round" stroke-dasharray="1.6 7"/>
-      <path d="M 620,110 C 700,113 782,113 834,109" fill="none" stroke="#c3d0df" stroke-width="2"/>
-      <path d="M 734,112 L 648,153 L 686,153 L 760,114 Z" fill="url(#fb-metal)" stroke="#b4c1d1" stroke-width=".6"/>
-      <g>
-        <rect x="668" y="127" width="56" height="21" rx="10.5" fill="url(#fb-metal)" stroke="#aebccd" stroke-width=".6"/>
-        <ellipse cx="722" cy="137.5" rx="5" ry="9.2" fill="#7e93ac"/>
-        <ellipse cx="722" cy="137.5" rx="2.3" ry="5.4" fill="#5c7089"/>
-      </g>
+            fill="url(#fb-fus)" stroke="#bcc7d6" stroke-width=".7"/>
+      <!-- top highlight + belly shade for volume -->
+      <path d="M 648,87 C 710,83 776,83 824,88 C 776,85.5 710,85.5 648,87 Z" fill="#ffffff" opacity=".5"/>
+      <path d="M 626,120 C 704,124.5 782,124 836,118 C 786,122 704,123 626,120 Z" fill="#adbbcd" opacity=".55"/>
+      <!-- blue cheatline -->
+      <path d="M 628,103.5 C 704,106.5 788,106.5 838,102.5" fill="none" stroke="url(#fb-tail)" stroke-width="2.6" stroke-linecap="round" opacity=".92"/>
+      <!-- passenger windows -->
+      <line x1="666" y1="98" x2="814" y2="98" stroke="#53667e" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="2 6.2"/>
+      <!-- cockpit windscreen -->
+      <path d="M 824,94.5 C 835,95.5 843,98.5 847,103 L 836,103.5 C 833,99.5 830,97.5 823,96.5 Z" fill="#41516a"/>
+      <!-- near wing (foreground) + winglet -->
+      <path d="M 786,118 L 668,149 L 690,152 L 790,122 Z" fill="url(#fb-wing)" stroke="#a8b6c8" stroke-width=".6"/>
+      <path d="M 670,149 L 661,137 L 671,141 Z" fill="#aebccd"/>
+      <!-- pylon + engine slung under the wing -->
+      <path d="M 728,117 L 744,117 L 740,128 L 725,128 Z" fill="#a6b4c5"/>
+      <path d="M 700,128 C 700,124 705,122 714,122 L 750,122 C 757,122 762,125 762,129
+               L 762,139 C 762,143 757,146 750,146 L 714,146 C 705,146 700,144 700,140 Z"
+            fill="url(#fb-metal)" stroke="#a4b3c4" stroke-width=".6"/>
+      <ellipse cx="760" cy="134" rx="4.2" ry="10.6" fill="#7890a9"/>
+      <ellipse cx="760" cy="134" rx="2" ry="6.6" fill="#4d617a"/>
+      <path d="M 700,128 L 695,131 L 695,137 L 700,140 Z" fill="#93a3b8"/>
     </g>`;
 
   const SVG = `
@@ -107,6 +123,12 @@
         </linearGradient>
         <linearGradient id="fb-metal" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#bdc8d7"/>
+        </linearGradient>
+        <linearGradient id="fb-wing" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#e6ebf2"/><stop offset="1" stop-color="#b1bfd0"/>
+        </linearGradient>
+        <linearGradient id="fb-tail" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#4a90ff"/><stop offset="1" stop-color="#1b58c6"/>
         </linearGradient>
         <linearGradient id="fb-ban" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9edf3"/>
