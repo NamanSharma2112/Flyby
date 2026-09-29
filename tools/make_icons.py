@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Generate Flyby's extension icons.
 
-Draws a little paper airplane towing a banner on a sky-blue rounded tile and
-writes icon16/32/48/128.png into ../icons. Everything is rendered on a
-super-sampled canvas and downscaled with LANCZOS so the small sizes stay crisp.
+Draws a flat, top-down twin-jet (white fuselage, red tail fin, pale swept wings,
+grey engines, dark nose) on a sky-blue rounded tile, and writes
+icon16/32/48/128.png into ../icons. Everything is rendered on a super-sampled
+canvas and downscaled with LANCZOS so the small sizes stay crisp.
 
 Run:  python3 tools/make_icons.py
 """
 
-import math
 import os
 
 from PIL import Image, ImageDraw
@@ -16,21 +16,31 @@ from PIL import Image, ImageDraw
 HERE = os.path.dirname(os.path.abspath(__file__))
 ICON_DIR = os.path.join(HERE, "..", "icons")
 
-# Sky gradient (top -> bottom) and the plane / banner colors.
 SKY_TOP = (74, 163, 255)      # #4aa3ff
 SKY_BOTTOM = (30, 111, 224)   # #1e6fe0
-PLANE = (255, 255, 255)
-PLANE_FOLD = (208, 226, 250)  # subtle shade for the origami fold
-BANNER = (255, 214, 92)       # warm banner behind the plane
-BANNER_EDGE = (240, 180, 40)
 
+WING_U = (228, 237, 251)
+WING_L = (206, 221, 245)
+TAILPLANE_U = (233, 240, 251)
+TAILPLANE_L = (213, 225, 243)
+FIN_RED = (232, 67, 77)
+BODY = (255, 255, 255)
+BELLY = (225, 232, 243)
+NOSE = (38, 50, 74)
+ENGINE_U = (223, 231, 244)
+ENGINE_L = (203, 214, 232)
+WINDOW = (43, 54, 72)
 
-def rotate(point, angle_deg, cx, cy):
-    a = math.radians(angle_deg)
-    x, y = point[0] - cx, point[1] - cy
-    rx = x * math.cos(a) - y * math.sin(a)
-    ry = x * math.sin(a) + y * math.cos(a)
-    return (rx + cx, ry + cy)
+# Artwork authored in a 64-unit space, plane pointing right.
+ART_X0, ART_X1 = 5.5, 56.0
+ART_Y0, ART_Y1 = 9.0, 55.0
+
+WING_UPPER = [(37, 29), (19, 9), (12.5, 11.5), (28.5, 29)]
+WING_LOWER = [(37, 35), (19, 55), (12.5, 52.5), (28.5, 35)]
+TAIL_UPPER = [(13, 30), (5.5, 24), (9.8, 22.6), (16.2, 29.4)]
+TAIL_LOWER = [(13, 34), (5.5, 40), (9.8, 41.4), (16.2, 34.6)]
+FIN = [(16, 29.5), (7.5, 15), (12.6, 14), (21.5, 29)]
+NOSE_TIP = [(48.5, 28.3), (56, 32), (48.5, 35.7)]
 
 
 def vertical_gradient(size, top, bottom):
@@ -56,53 +66,48 @@ def build(size):
     # Rounded sky tile.
     tile = vertical_gradient(S, SKY_TOP, SKY_BOTTOM).convert("RGBA")
     mask = Image.new("L", (S, S), 0)
-    ImageDraw.Draw(mask).rounded_rectangle(
-        [0, 0, S - 1, S - 1], radius=int(S * 0.22), fill=255
-    )
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, S - 1, S - 1], radius=int(S * 0.22), fill=255)
     img.paste(tile, (0, 0), mask)
 
     draw = ImageDraw.Draw(img)
-    cx, cy = S / 2, S / 2
-    ang = -22  # tilt the whole scene so the plane climbs to the upper-right
 
-    # --- Banner trailing behind the plane (a little wavy pennant) ---
-    bx = S * 0.18   # banner left edge
-    bw = S * 0.34   # banner width
-    by = S * 0.52   # banner vertical center
-    bh = S * 0.13   # banner height
-    wob = S * 0.03
-    banner = [
-        (bx, by - bh / 2),
-        (bx + bw * 0.5, by - bh / 2 - wob),
-        (bx + bw, by - bh / 2),
-        (bx + bw, by + bh / 2),
-        (bx + bw * 0.5, by + bh / 2 + wob),
-        (bx, by + bh / 2),
-    ]
-    banner = [rotate(p, ang, cx, cy) for p in banner]
-    draw.polygon(banner, fill=BANNER, outline=BANNER_EDGE, width=max(1, ss))
+    # Fit the artwork into ~76% of the tile, centred.
+    art_w, art_h = ART_X1 - ART_X0, ART_Y1 - ART_Y0
+    scale = (0.76 * S) / art_w
+    off_x = (S - art_w * scale) / 2 - ART_X0 * scale
+    off_y = (S - art_h * scale) / 2 - ART_Y0 * scale
 
-    # Tow line from banner to the plane tail.
-    line_a = rotate((bx + bw, by), ang, cx, cy)
-    line_b = rotate((S * 0.60, S * 0.44), ang, cx, cy)
-    draw.line([line_a, line_b], fill=PLANE, width=max(2, ss))
+    def P(pts):
+        return [(x * scale + off_x, y * scale + off_y) for x, y in pts]
 
-    # --- Paper airplane (nose to the right) ---
-    nose = (S * 0.86, S * 0.44)
-    top_back = (S * 0.52, S * 0.24)
-    notch = (S * 0.63, S * 0.44)
-    bot_back = (S * 0.52, S * 0.60)
+    def box(x0, y0, x1, y1):
+        return [x0 * scale + off_x, y0 * scale + off_y, x1 * scale + off_x, y1 * scale + off_y]
 
-    upper = [rotate(p, ang, cx, cy) for p in (nose, top_back, notch)]
-    lower = [rotate(p, ang, cx, cy) for p in (nose, notch, bot_back)]
-    draw.polygon(lower, fill=PLANE_FOLD)
-    draw.polygon(upper, fill=PLANE)
-    # Center fold line.
+    draw.polygon(P(WING_UPPER), fill=WING_U)
+    draw.polygon(P(WING_LOWER), fill=WING_L)
+    draw.polygon(P(TAIL_UPPER), fill=TAILPLANE_U)
+    draw.polygon(P(TAIL_LOWER), fill=TAILPLANE_L)
+    draw.polygon(P(FIN), fill=FIN_RED)
+
+    # Fuselage capsule + belly shade + dark nose.
+    draw.rounded_rectangle(box(9.4, 27.2, 56, 36.8), radius=4.8 * scale, fill=BODY)
     draw.line(
-        [rotate(nose, ang, cx, cy), rotate(notch, ang, cx, cy)],
-        fill=BANNER_EDGE,
-        width=max(1, ss // 2),
+        [(13.5 * scale + off_x, 35.4 * scale + off_y), (47 * scale + off_x, 35.4 * scale + off_y)],
+        fill=BELLY,
+        width=max(1, int(2.2 * scale)),
     )
+    draw.polygon(P(NOSE_TIP), fill=NOSE)
+
+    # Engines.
+    draw.rounded_rectangle(box(25, 13.4, 38.5, 20.4), radius=3.5 * scale, fill=ENGINE_U)
+    draw.rounded_rectangle(box(25, 43.6, 38.5, 50.6), radius=3.5 * scale, fill=ENGINE_L)
+
+    # Windows (skipped at the smallest size, where they'd turn to mush).
+    if size >= 32:
+        r = 1.25 * scale
+        for wx in (24, 28, 32, 36, 40, 44):
+            cx, cy = wx * scale + off_x, 32 * scale + off_y
+            draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=WINDOW)
 
     return img.resize((size, size), Image.LANCZOS)
 

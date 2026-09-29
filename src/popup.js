@@ -72,13 +72,23 @@ function updateLeadHint() {
   }
 }
 
-function whenLabel(minutesUntil, startISO) {
+// Relative countdown that complements the clock time on the stub.
+function relLabel(minutesUntil) {
   if (minutesUntil <= 0) return "now";
   if (minutesUntil < 60) return `in ${minutesUntil} min`;
+  const h = Math.floor(minutesUntil / 60);
+  const m = minutesUntil % 60;
+  return m ? `in ${h}h ${m}m` : `in ${h}h`;
+}
+
+// Split a start time into "5:06" + "PM" for the boarding-pass stub.
+function clockParts(startISO) {
   try {
-    return new Date(startISO).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const s = new Date(startISO).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const m = s.match(/^\s*(.+?)\s*([AP]\.?M\.?)?\s*$/i);
+    return { time: (m && m[1]) || s, mer: ((m && m[2]) || "").replace(/\./g, "").toUpperCase() };
   } catch (_) {
-    return `in ${minutesUntil} min`;
+    return { time: "--:--", mer: "" };
   }
 }
 
@@ -92,14 +102,38 @@ function renderUpcoming(upcoming) {
   }
   empty.classList.add("hidden");
   for (const ev of upcoming) {
+    const { time, mer } = clockParts(ev.startISO);
+
     const li = document.createElement("li");
-    const title = document.createElement("span");
+    li.className = "tkt";
+
+    const stub = document.createElement("div");
+    stub.className = "tkt__stub";
+    const t = document.createElement("div");
+    t.className = "tkt__time";
+    t.textContent = time;
+    stub.appendChild(t);
+    if (mer) {
+      const m = document.createElement("div");
+      m.className = "tkt__mer";
+      m.textContent = mer;
+      stub.appendChild(m);
+    }
+
+    const perf = document.createElement("div");
+    perf.className = "tkt__perf";
+
+    const body = document.createElement("div");
+    body.className = "tkt__body";
+    const title = document.createElement("div");
     title.className = "ev__title";
     title.textContent = ev.title;
-    const when = document.createElement("span");
-    when.className = "ev__when";
-    when.textContent = whenLabel(ev.minutesUntil, ev.startISO);
-    li.append(title, when);
+    const meta = document.createElement("div");
+    meta.className = "tkt__meta";
+    meta.textContent = relLabel(ev.minutesUntil);
+    body.append(title, meta);
+
+    li.append(stub, perf, body);
     list.appendChild(li);
   }
 }

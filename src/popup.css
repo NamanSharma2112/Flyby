@@ -57,19 +57,12 @@ body {
   color: #fff;
   overflow: hidden;
 }
-.hero__sky { position: absolute; inset: 0; pointer-events: none; }
-.hero__plane {
-  position: absolute; top: 16px; left: -30px; width: 22px; height: 22px;
-  opacity: 0.28; transform: rotate(6deg);
-  animation: hero-fly 9s linear infinite;
+/* torn ticket edge along the bottom of the header */
+.hero::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 10px;
+  background: radial-gradient(circle 6px at 12px 10px, var(--bg) 98%, transparent 100%) repeat-x;
+  background-size: 24px 10px;
 }
-@keyframes hero-fly {
-  0% { transform: translateX(0) translateY(0) rotate(6deg); opacity: 0; }
-  10% { opacity: .3; }
-  90% { opacity: .3; }
-  100% { transform: translateX(420px) translateY(-10px) rotate(6deg); opacity: 0; }
-}
-@media (prefers-reduced-motion: reduce) { .hero__plane { animation: none; opacity: .2; left: 12px; } }
 .hero__icon {
   position: relative; width: 38px; height: 38px; border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
@@ -184,14 +177,35 @@ main { padding: 13px; display: flex; flex-direction: column; gap: 11px; }
 .switch--sm input:checked + .switch__track .switch__thumb { transform: translateX(17px); }
 .hero .switch input:checked + .switch__track .switch__thumb { background: var(--brand); }
 
-/* ---- Events -------------------------------------------------------------- */
-.events { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
-.events li {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  padding: 9px 11px; border-radius: 11px; background: var(--brand-tint);
+/* ---- Events as mini boarding passes -------------------------------------- */
+.events { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.events li.tkt {
+  display: flex; align-items: stretch; padding: 0; overflow: hidden;
+  border-radius: 12px; background: var(--brand-tint); border: 1px solid var(--line);
+}
+.tkt__stub {
+  flex: 0 0 auto; width: 58px; padding: 9px 4px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: var(--brand-ink); background: color-mix(in srgb, var(--brand) 15%, transparent);
+}
+.tkt__time { font-size: 14.5px; font-weight: 800; line-height: 1.05; letter-spacing: -0.2px; }
+.tkt__mer { font-size: 9px; font-weight: 700; letter-spacing: 0.6px; opacity: 0.72; margin-top: 1px; }
+.tkt__perf {
+  position: relative; flex: 0 0 auto; width: 1px;
+  background: repeating-linear-gradient(to bottom, var(--line) 0 4px, transparent 4px 8px);
+}
+.tkt__perf::before, .tkt__perf::after {
+  content: ""; position: absolute; left: -4px; width: 9px; height: 9px;
+  border-radius: 50%; background: var(--card);
+}
+.tkt__perf::before { top: -5px; }
+.tkt__perf::after { bottom: -5px; }
+.tkt__body {
+  flex: 1; min-width: 0; padding: 9px 11px;
+  display: flex; flex-direction: column; justify-content: center; gap: 2px;
 }
 .events .ev__title { font-size: 13px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.events .ev__when { font-size: 12px; color: var(--brand-ink); font-weight: 700; flex: 0 0 auto; }
+.tkt__meta { font-size: 11.5px; font-weight: 700; color: var(--brand-ink); }
 
 .hint { font-size: 12px; color: var(--muted); margin: 9px 0 0; line-height: 1.45; }
 .footnote { font-size: 11.5px; color: var(--muted); text-align: center; margin: 2px 0 0; min-height: 14px; line-height: 1.45; }

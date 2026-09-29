@@ -95,8 +95,8 @@
       <!-- top highlight + belly shade for volume -->
       <path d="M 648,87 C 710,83 776,83 824,88 C 776,85.5 710,85.5 648,87 Z" fill="#ffffff" opacity=".5"/>
       <path d="M 626,120 C 704,124.5 782,124 836,118 C 786,122 704,123 626,120 Z" fill="#adbbcd" opacity=".55"/>
-      <!-- blue cheatline -->
-      <path d="M 628,103.5 C 704,106.5 788,106.5 838,102.5" fill="none" stroke="url(#fb-tail)" stroke-width="2.6" stroke-linecap="round" opacity=".92"/>
+      <!-- cheatline -->
+      <path d="M 628,103.5 C 704,106.5 788,106.5 838,102.5" fill="none" stroke="#c3d0df" stroke-width="2.4" stroke-linecap="round"/>
       <!-- passenger windows -->
       <line x1="666" y1="98" x2="814" y2="98" stroke="#53667e" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="2 6.2"/>
       <!-- cockpit windscreen -->
@@ -128,7 +128,7 @@
           <stop offset="0" stop-color="#e6ebf2"/><stop offset="1" stop-color="#b1bfd0"/>
         </linearGradient>
         <linearGradient id="fb-tail" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#4a90ff"/><stop offset="1" stop-color="#1b58c6"/>
+          <stop offset="0" stop-color="#f4565f"/><stop offset="1" stop-color="#cf2f3a"/>
         </linearGradient>
         <linearGradient id="fb-ban" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9edf3"/>
