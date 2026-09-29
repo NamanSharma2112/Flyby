@@ -47,11 +47,29 @@ function renderConnection(state) {
 function renderSettings(settings) {
   $("enabled").checked = !!settings.enabled;
   $("notifyBackup").checked = !!settings.notifyBackup;
+  $("finalReminder").checked = settings.finalReminder !== false;
   const leads = new Set((settings.leadTimes || []).map(Number));
   document.querySelectorAll("#leadChips input").forEach((el) => {
     el.checked = leads.has(Number(el.value));
   });
-  $("leadHint").classList.toggle("hidden", leads.size > 0);
+  updateLeadHint();
+}
+
+// The heads-up chips are optional as long as the final reminder is on; keep the
+// hint informative rather than an error.
+function updateLeadHint() {
+  const leads = currentLeads();
+  const finalOn = $("finalReminder").checked;
+  const hint = $("leadHint");
+  if (leads.length > 0) {
+    hint.classList.add("hidden");
+  } else if (finalOn) {
+    hint.textContent = "No heads-up — only the final reminder will fly.";
+    hint.classList.remove("hidden");
+  } else {
+    hint.textContent = "Pick a heads-up time, or turn on the final reminder.";
+    hint.classList.remove("hidden");
+  }
 }
 
 function whenLabel(minutesUntil, startISO) {
@@ -161,11 +179,15 @@ function wire() {
     await saveSettings({ notifyBackup: e.target.checked });
   });
 
+  $("finalReminder").addEventListener("change", async (e) => {
+    updateLeadHint();
+    await saveSettings({ finalReminder: e.target.checked });
+  });
+
   document.querySelectorAll("#leadChips input").forEach((el) => {
     el.addEventListener("change", async () => {
-      const leads = currentLeads();
-      $("leadHint").classList.toggle("hidden", leads.length > 0);
-      await saveSettings({ leadTimes: leads });
+      updateLeadHint();
+      await saveSettings({ leadTimes: currentLeads() });
     });
   });
 

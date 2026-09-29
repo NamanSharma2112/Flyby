@@ -16,6 +16,7 @@ const API_BASE = "https://www.googleapis.com/calendar/v3";
 const DEFAULT_SETTINGS = {
   enabled: true,
   leadTimes: [10], // minutes before an event to fly the plane; user can pick several
+  finalReminder: true, // also fly once more the moment the event starts
   notifyBackup: true, // show a desktop notification when no page can host the plane
 };
 
@@ -141,7 +142,7 @@ async function authedFetch(path, params) {
 async function fetchEvents(minutesAhead, maxResults) {
   const now = Date.now();
   const data = await authedFetch(`/calendars/${encodeURIComponent(CALENDAR_ID)}/events`, {
-    timeMin: new Date(now).toISOString(),
+    timeMin: new Date(now - 2 * 60000).toISOString(), // small back-window for the "starting now" flyby
     timeMax: new Date(now + minutesAhead * 60000).toISOString(),
     singleEvents: "true",
     orderBy: "startTime",
@@ -164,7 +165,7 @@ async function fetchEvents(minutesAhead, maxResults) {
         minutesUntil: (startMs - Date.now()) / 60000,
       };
     })
-    .filter((ev) => ev.startMs > Date.now());
+    .filter((ev) => ev.startMs > Date.now() - 2 * 60000);
 
   return items;
 }
@@ -203,15 +204,17 @@ async function poll() {
   const connected = await getLocal("connected", false);
   if (!settings.enabled || !connected) return;
 
-  const leads = (settings.leadTimes && settings.leadTimes.length ? settings.leadTimes : [10])
+  const leads = (settings.leadTimes || [])
     .map(Number)
     .filter((n) => n > 0);
-  if (!leads.length) return;
+  const wantFinal = settings.finalReminder !== false;
+  if (!leads.length && !wantFinal) return;
 
   let events;
   try {
     // Look a little past the largest lead time so nothing slips through.
-    events = await fetchEvents(Math.max(...leads) + 1, 15);
+    const horizon = (leads.length ? Math.max(...leads) : 1) + 1;
+    events = await fetchEvents(horizon, 15);
     await setLocal({ needsReauth: false, lastError: null });
   } catch (e) {
     const msg = String(e.message || e);
@@ -226,7 +229,7 @@ async function poll() {
 
   for (const event of events) {
     for (const lead of leads) {
-      // Fire once when the event first falls inside this lead window.
+      // Heads-up: fire once when the event first falls inside this lead window.
       if (event.minutesUntil > 0 && event.minutesUntil <= lead) {
         const key = reminderKey(event, lead);
         if (!reminded[key]) {
@@ -241,6 +244,22 @@ async function poll() {
         }
       }
     }
+
+    // Final reminder: one more flyby the moment the event starts.
+    if (wantFinal && event.minutesUntil <= 0.5 && event.minutesUntil > -2) {
+      const key = reminderKey(event, "final");
+      if (!reminded[key]) {
+        reminded[key] = event.startMs;
+        changed = true;
+        await showFlyby({
+          title: event.title,
+          minutes: 0,
+          starting: true,
+          location: event.location,
+          hangoutLink: event.hangoutLink,
+        });
+      }
+    }
   }
 
   if (changed) await setLocal({ reminded });
@@ -251,6 +270,7 @@ async function poll() {
 // ---------------------------------------------------------------------------
 
 function subtitleFor(data) {
+  if (data.starting) return "starting now";
   if (data.minutes <= 1) return "starts in about a minute";
   return `starts in ${data.minutes} minutes`;
 }
@@ -259,6 +279,7 @@ async function showFlyby(data) {
   const payload = {
     title: data.title,
     minutes: data.minutes,
+    starting: !!data.starting,
     subtitle: subtitleFor(data),
     location: data.location || "",
   };

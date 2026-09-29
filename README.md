@@ -28,8 +28,11 @@ etc.), Flyby quietly falls back to a desktop notification instead.
   the event name plus a small `· in 10 min` tag — rides the wave via an SVG
   `textPath`, and auto-fits (short titles centered and large, long ones
   compressed and clipped with an ellipsis, with the time tag always kept).
-- ⏱️ **Pick your lead times** — 1, 5, 10, 15 and/or 30 minutes before an event.
-  Choose more than one and the plane flies at each.
+- ⏱️ **Two-stage reminders** — a *heads-up* flyby at the lead times you pick
+  (1, 5, 10, 15 and/or 30 min before), then an optional **final flyby the moment
+  the event starts** ("now").
+- 🗓️ **Calendar source** — Google Calendar today; the popup shows **Slack** and
+  **Outlook** as planned sources (marked *soon*).
 - 🔔 **Desktop-notification fallback** when the active tab is a restricted page.
 - ♿ **Respects `prefers-reduced-motion`** — a gentle fade-in near the top instead
   of a fly-across.
@@ -174,7 +177,9 @@ isn't supported as-is.
 
 ## Ideas / roadmap
 
-- Watch multiple calendars (needs the broader `calendar.readonly` scope +
+- More sources: **Slack** status/reminders and **Outlook / Microsoft 365**
+  calendar (shown as *soon* in the popup today).
+- Watch multiple Google calendars (needs the broader `calendar.readonly` scope +
   iterating `calendarList`).
 - Custom banner colors and per-event messages.
 - Snooze / "seen it" dismissal.
