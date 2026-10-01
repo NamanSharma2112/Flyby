@@ -23,24 +23,41 @@ function renderConnection(state) {
   dot.className = "dot";
   if (!state.connected) {
     dot.classList.add("dot--off");
-    title.textContent = "Not connected";
-    sub.textContent = "Connect your Google Calendar to get started.";
-    connectBtn.textContent = "Connect Google Calendar";
+    title.textContent = "Not signed in";
+    sub.textContent = state.hasClientId
+      ? "Sign in and Flyby reads your schedule automatically."
+      : "Finish the one-time setup above, then sign in.";
+    connectBtn.textContent = "Sign in with Google";
     connectBtn.classList.remove("hidden");
+    connectBtn.disabled = !state.hasClientId;
     disconnectBtn.classList.add("hidden");
   } else if (state.needsReauth) {
     dot.classList.add("dot--warn");
-    title.textContent = "Reconnect needed";
-    sub.textContent = "Your Google sign-in expired.";
-    connectBtn.textContent = "Reconnect";
+    title.textContent = "Sign-in expired";
+    sub.textContent = "Google needs you to sign in again.";
+    connectBtn.textContent = "Sign in again";
+    connectBtn.disabled = false;
     connectBtn.classList.remove("hidden");
     disconnectBtn.classList.remove("hidden");
   } else {
     dot.classList.add("dot--on");
-    title.textContent = "Connected";
-    sub.textContent = "Watching your primary calendar.";
+    title.textContent = state.email ? "Signed in" : "Connected";
+    sub.textContent = state.email
+      ? `${state.email} · watching your primary calendar.`
+      : "Watching your primary calendar.";
     connectBtn.classList.add("hidden");
     disconnectBtn.classList.remove("hidden");
+  }
+}
+
+// The setup card only exists until a Client ID is saved.
+function renderSetup(state) {
+  const needsSetup = !state.hasClientId;
+  $("setupCard").classList.toggle("hidden", !needsSetup);
+  if (state.redirectUri) $("redirectUri").textContent = state.redirectUri;
+  const input = $("clientIdInput");
+  if (needsSetup && !input.value && state.settings && state.settings.clientId) {
+    input.value = state.settings.clientId;
   }
 }
 
@@ -158,6 +175,7 @@ function render(state) {
     $("footnote").classList.add("err");
     return;
   }
+  renderSetup(state);
   renderConnection(state);
   renderSettings(state.settings || {});
   renderUpcoming(state.upcoming || []);
@@ -189,7 +207,7 @@ function busy(btn, on, labelWhileBusy) {
 function wire() {
   $("connectBtn").addEventListener("click", async () => {
     const btn = $("connectBtn");
-    busy(btn, true, "Connecting…");
+    busy(btn, true, "Opening Google…");
     const resp = await send("connect");
     busy(btn, false);
     if (resp && resp.ok) render(resp);
@@ -249,23 +267,39 @@ function wire() {
 
 // ---- boot ------------------------------------------------------------------
 
-function setupOnboarding() {
-  const manifest = chrome.runtime.getManifest();
-  const cid = (manifest.oauth2 && manifest.oauth2.client_id) || "";
-  const needsSetup = !cid || /^REPLACE_WITH/i.test(cid);
-
-  $("setupCard").classList.toggle("hidden", !needsSetup);
-  $("connCard").classList.toggle("hidden", needsSetup);
-  if (needsSetup) $("extId").textContent = chrome.runtime.id;
-
-  $("copyId").addEventListener("click", async () => {
+// Wire the one-time setup controls (copy redirect URI, save Client ID, guide).
+function wireSetup() {
+  $("copyRedirect").addEventListener("click", async () => {
     try {
-      await navigator.clipboard.writeText(chrome.runtime.id);
-      const b = $("copyId");
+      await navigator.clipboard.writeText($("redirectUri").textContent.trim());
+      const b = $("copyRedirect");
       b.textContent = "Copied!";
       setTimeout(() => (b.textContent = "Copy"), 1200);
     } catch (_) {}
   });
+
+  const save = async () => {
+    const btn = $("saveClientId");
+    const clientId = $("clientIdInput").value.trim();
+    const note = $("footnote");
+    note.classList.remove("err");
+    if (!/\.apps\.googleusercontent\.com$/.test(clientId)) {
+      note.textContent = "That doesn't look like a Client ID — it should end in .apps.googleusercontent.com";
+      note.classList.add("err");
+      return;
+    }
+    busy(btn, true, "Saving…");
+    await saveSettings({ clientId });
+    busy(btn, false);
+    note.textContent = "Saved — now click Sign in with Google.";
+    render(await send("getState"));
+  };
+
+  $("saveClientId").addEventListener("click", save);
+  $("clientIdInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") save();
+  });
+
   $("guideBtn").addEventListener("click", () => {
     chrome.tabs.create({ url: chrome.runtime.getURL("src/setup.html") });
   });
@@ -286,7 +320,7 @@ async function checkActiveTab() {
 
 document.addEventListener("DOMContentLoaded", async () => {
   wire();
-  setupOnboarding();
+  wireSetup();
   checkActiveTab();
   render(await send("getState"));
 });

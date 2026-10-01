@@ -244,3 +244,15 @@ code {
   font-size: 11.5px; color: var(--muted); margin: 10px 0 0; padding-top: 10px;
   border-top: 1px solid var(--line-2); line-height: 1.5;
 }
+
+/* ---- Setup inputs -------------------------------------------------------- */
+.field__label--sp { margin-top: 13px; }
+.input {
+  width: 100%; border: 1px solid var(--line); border-radius: 10px;
+  padding: 9px 11px; margin-bottom: 10px;
+  font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--card); color: var(--ink);
+}
+.input::placeholder { color: var(--muted); opacity: .75; }
+.input:focus { outline: 2px solid var(--brand); outline-offset: 1px; border-color: var(--brand); }
+.btn[disabled] { opacity: .5; cursor: not-allowed; box-shadow: none; }

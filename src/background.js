@@ -15,6 +15,7 @@ const API_BASE = "https://www.googleapis.com/calendar/v3";
 
 const DEFAULT_SETTINGS = {
   enabled: true,
+  clientId: "", // Google OAuth Client ID, entered once in the popup
   leadTimes: [10], // minutes before an event to fly the plane; user can pick several
   finalReminder: true, // also fly once more the moment the event starts
   notifyBackup: true, // show a desktop notification when no page can host the plane
@@ -45,70 +46,118 @@ async function setLocal(obj) {
 }
 
 // ---------------------------------------------------------------------------
-// Auth
+// Auth — "Sign in with Google" via chrome.identity.launchWebAuthFlow.
+//
+// The Client ID lives in settings (entered once in the popup), not in the
+// manifest, so nobody has to edit files. The extension ID is pinned by the
+// manifest "key", so the redirect URI below never changes.
 // ---------------------------------------------------------------------------
 
-function getAuthToken(interactive) {
+const SCOPES = [
+  "https://www.googleapis.com/auth/calendar.events.readonly",
+  "https://www.googleapis.com/auth/userinfo.email",
+];
+
+function redirectUri() {
+  return chrome.identity.getRedirectURL();
+}
+
+function buildAuthUrl(clientId, interactive) {
+  const u = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+  u.searchParams.set("client_id", clientId);
+  u.searchParams.set("response_type", "token");
+  u.searchParams.set("redirect_uri", redirectUri());
+  u.searchParams.set("scope", SCOPES.join(" "));
+  u.searchParams.set("include_granted_scopes", "true");
+  // Silent refreshes must never pop UI; the first sign-in should let the user
+  // pick an account.
+  u.searchParams.set("prompt", interactive ? "select_account" : "none");
+  return u.toString();
+}
+
+function launchFlow(url, interactive) {
   return new Promise((resolve, reject) => {
-    chrome.identity.getAuthToken({ interactive }, (token) => {
+    chrome.identity.launchWebAuthFlow({ url, interactive }, (redirect) => {
       const err = chrome.runtime.lastError;
-      if (err || !token) {
-        reject(new Error(err ? err.message : "No token returned"));
-      } else {
-        resolve(token);
-      }
+      if (err || !redirect) reject(new Error(err ? err.message : "Sign-in was cancelled"));
+      else resolve(redirect);
     });
   });
 }
 
-function removeCachedToken(token) {
-  return new Promise((resolve) => {
-    if (!token) return resolve();
-    chrome.identity.removeCachedAuthToken({ token }, () => resolve());
+// Run the OAuth flow and cache the resulting access token.
+async function signIn(interactive) {
+  const { clientId } = await getSettings();
+  if (!clientId) throw new Error("No Google Client ID set yet");
+
+  const redirect = await launchFlow(buildAuthUrl(clientId, interactive), interactive);
+  const params = new URLSearchParams((redirect.split("#")[1] || "").replace(/^\/+/, ""));
+  const token = params.get("access_token");
+  if (!token) {
+    const q = new URLSearchParams(redirect.split("?")[1] || "");
+    throw new Error(params.get("error") || q.get("error") || "Google returned no access token");
+  }
+  const expiresIn = Number(params.get("expires_in") || 3600);
+  await setLocal({
+    token: { accessToken: token, expiresAt: Date.now() + Math.max(60, expiresIn - 60) * 1000 },
   });
+  return token;
+}
+
+// A cached token while it's fresh, otherwise a silent re-auth.
+async function getTokenSilently() {
+  const tok = await getLocal("token", null);
+  if (tok && tok.accessToken && tok.expiresAt > Date.now()) return tok.accessToken;
+  return signIn(false);
+}
+
+async function fetchAccountEmail(token) {
+  try {
+    const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { Authorization: "Bearer " + token },
+    });
+    if (!res.ok) return null;
+    const info = await res.json();
+    return info.email || null;
+  } catch (_) {
+    return null;
+  }
 }
 
 // Interactive sign-in triggered from the popup.
 async function connect() {
   try {
-    const token = await getAuthToken(true);
-    await setLocal({ connected: true, needsReauth: false, lastError: null });
-    // Prime the pump so the user sees state right away.
-    await poll().catch(() => {});
+    const token = await signIn(true);
+    const email = await fetchAccountEmail(token);
+    await setLocal({ connected: true, needsReauth: false, lastError: null, email });
     await ensureAlarm();
-    return { ok: true, ...(await getState(token)) };
+    await poll().catch(() => {});
+    return { ok: true, ...(await getState()) };
   } catch (e) {
-    await setLocal({ connected: false, lastError: String(e.message || e) });
-    return { ok: false, error: String(e.message || e) };
+    const msg = String(e.message || e);
+    await setLocal({ connected: false, lastError: msg });
+    return { ok: false, error: msg };
   }
 }
 
-// Fully revoke the cached token and forget it locally.
+// Forget the token locally and revoke the grant on Google's side.
 async function disconnect() {
   try {
-    const token = await getAuthToken(false).catch(() => null);
-    if (token) {
-      await removeCachedToken(token);
-      // Best-effort revoke so the grant is dropped on Google's side too.
+    const tok = await getLocal("token", null);
+    if (tok && tok.accessToken) {
       try {
         await fetch(
-          "https://oauth2.googleapis.com/revoke?token=" + encodeURIComponent(token),
+          "https://oauth2.googleapis.com/revoke?token=" + encodeURIComponent(tok.accessToken),
           { method: "POST" }
         );
       } catch (_) {
-        /* offline is fine — the cached token is already gone */
+        /* offline is fine — we drop the local token either way */
       }
     }
   } finally {
-    await setLocal({ connected: false, needsReauth: false, lastError: null });
+    await setLocal({ connected: false, needsReauth: false, lastError: null, email: null, token: null });
   }
   return { ok: true, ...(await getState()) };
-}
-
-// Return a usable token or throw. On a 401 the caller clears the cached token
-// and retries once via `authedFetch`.
-async function getTokenSilently() {
-  return getAuthToken(false);
 }
 
 // Fetch against the Calendar API, transparently refreshing a stale token once.
@@ -120,9 +169,9 @@ async function authedFetch(path, params) {
   let res = await fetch(url, { headers: { Authorization: "Bearer " + token } });
 
   if (res.status === 401) {
-    // Token expired/revoked in Chrome's cache — drop it and mint a fresh one.
-    await removeCachedToken(token);
-    token = await getTokenSilently();
+    // Token expired or was revoked — drop it and silently mint a fresh one.
+    await setLocal({ token: null });
+    token = await signIn(false);
     res = await fetch(url, { headers: { Authorization: "Bearer " + token } });
   }
 
@@ -367,6 +416,10 @@ async function getState() {
   return {
     connected,
     needsReauth: await getLocal("needsReauth", needsReauth),
+    email: await getLocal("email", null),
+    hasClientId: !!(settings.clientId || "").trim(),
+    redirectUri: redirectUri(),
+    extensionId: chrome.runtime.id,
     settings,
     upcoming,
     lastError,

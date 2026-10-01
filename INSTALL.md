@@ -33,33 +33,34 @@ the page towing a banner.
 
 ---
 
-## B. Connect your Google Calendar (one time)
+## B. Sign in with Google (one time)
 
-This gives Flyby permission to **read** your calendar so it knows when your
-meetings are. The friendliest way is the built-in guide:
+Google won't let *any* app read a calendar without a free **Client ID**. You
+create one once, paste it into Flyby, and from then on connecting is a single
+**Sign in with Google** click — no files to edit, nothing to reload.
 
-> Click the Flyby icon → **Open the step-by-step guide**
-> (or open the file `src/setup.html` from this folder in your browser).
+The friendliest way is the built-in guide:
+
+> Click the Flyby icon -> **Open the step-by-step guide**
+> (or open `src/setup.html` from this folder in your browser).
 
 **Short version:**
 
-1. Copy your **extension ID** (the Flyby popup shows it, or find it on
-   `chrome://extensions`).
-2. Go to the [Google Cloud Console](https://console.cloud.google.com/) → create a
+1. Open the Flyby popup and **Copy** the **Authorized redirect URI** it shows.
+   (It's fixed for Flyby, so this never changes.)
+2. Go to the [Google Cloud Console](https://console.cloud.google.com/) -> create a
    project (any name).
-3. **APIs & Services → Library** → enable **Google Calendar API**.
-4. **APIs & Services → OAuth consent screen** → choose **External**, add your
-   email, and add yourself under **Test users**.
-5. **APIs & Services → Credentials → Create credentials → OAuth client ID** →
-   type **Chrome Extension** → paste your extension ID.
-6. Copy the **Client ID** and paste it into **`manifest.json`** (the `client_id`
-   line), then click **reload** ↻ on Flyby at `chrome://extensions`.
-7. Click the Flyby icon → **Connect Google Calendar** → approve.
+3. **APIs & Services -> Library** -> enable **Google Calendar API**.
+4. **APIs & Services -> OAuth consent screen** -> **External**, add your email,
+   and add yourself under **Test users**.
+5. **APIs & Services -> Credentials -> Create credentials -> OAuth client ID** ->
+   application type **Web application** -> under **Authorized redirect URIs**
+   paste the address from step 1 -> **Create**.
+6. Copy the **Client ID**, paste it into the Flyby popup, hit **Save & continue**.
+7. Click **Sign in with Google**, pick your account, approve.
 
-Done! Flyby now flies a banner across your screen a few minutes before each
-meeting.
-
----
+Flyby connects itself, shows which account you're signed in as, and loads your
+schedule right away.
 
 ## Do I need to deploy or pay anything?
 

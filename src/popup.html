@@ -20,32 +20,33 @@
     </header>
 
     <main>
-      <!-- One-time setup (shown only until a Client ID is configured) -->
+      <!-- One-time setup (shown only until a Client ID is saved) -->
       <section class="card setup hidden" id="setupCard">
         <div class="card__head">
           <span class="ic ic--warn">
             <svg viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </span>
-          <span class="card__title">Finish setup · one time</span>
+          <span class="card__title">One-time setup</span>
         </div>
-        <p class="setup__lead">To read your calendar, Flyby needs a free Google
-          <b>Client ID</b>. Takes about 5 minutes.</p>
-        <ol class="setup__steps">
-          <li>Copy this extension's ID:
-            <div class="copyrow">
-              <code id="extId">…</code>
-              <button class="mini" id="copyId" type="button">Copy</button>
-            </div>
-          </li>
-          <li>Create a Google OAuth <b>Client ID</b> (type: <b>Chrome Extension</b>)
-            and paste the ID above into it.</li>
-          <li>Put that Client ID into <code>manifest.json</code>, then reload Flyby.</li>
-        </ol>
-        <button class="btn btn--primary" id="guideBtn" type="button">Open the step-by-step guide</button>
+        <p class="setup__lead">Google needs a free <b>Client ID</b> before it will let an
+          app read your calendar. Do this once — after that it's a single click to sign in.</p>
+
+        <div class="field__label">1 · Authorized redirect URI — paste this into Google</div>
+        <div class="copyrow">
+          <code id="redirectUri">…</code>
+          <button class="mini" id="copyRedirect" type="button">Copy</button>
+        </div>
+
+        <div class="field__label field__label--sp">2 · Paste the Client ID Google gives you</div>
+        <input class="input" id="clientIdInput" type="text" spellcheck="false" autocomplete="off"
+               placeholder="1234-abc.apps.googleusercontent.com" />
+        <button class="btn btn--primary" id="saveClientId" type="button">Save &amp; continue</button>
+
+        <button class="btn btn--ghost" id="guideBtn" type="button">Open the step-by-step guide</button>
         <p class="setup__tip">Meanwhile, try <b>✈️ a test flight</b> below — no setup needed.</p>
       </section>
 
-      <!-- Source / connection -->
+      <!-- Account / source -->
       <section class="card" id="connCard">
         <div class="src">
           <span class="src__logo">
@@ -59,12 +60,12 @@
           </span>
           <div class="src__meta">
             <div class="src__name">Google Calendar</div>
-            <div class="status"><span class="dot" id="connDot"></span><span id="connTitle">Not connected</span></div>
+            <div class="status"><span class="dot" id="connDot"></span><span id="connTitle">Not signed in</span></div>
           </div>
         </div>
-        <small class="src__sub" id="connSub">Connect your Google Calendar to get started.</small>
-        <button class="btn btn--primary" id="connectBtn">Connect Google Calendar</button>
-        <button class="btn btn--ghost hidden" id="disconnectBtn">Disconnect</button>
+        <small class="src__sub" id="connSub">Sign in and Flyby reads your schedule automatically.</small>
+        <button class="btn btn--primary" id="connectBtn">Sign in with Google</button>
+        <button class="btn btn--ghost hidden" id="disconnectBtn">Sign out</button>
         <div class="src__more">
           <span class="src__morelabel">More sources</span>
           <span class="pill pill--soon">Slack · soon</span>

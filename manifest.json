@@ -4,6 +4,7 @@
   "short_name": "Flyby",
   "version": "1.0.0",
   "description": "A tiny airplane tows a banner across your screen a few minutes before your next Google Calendar meeting.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAm597KWNJAMTEAgGLae1DgJ4mFP4E0rhQgrw6Qfogjun/JtKQuUd3oqkS9LYVkyLYeo64x5oBEpXNv7rCdxuc+yD7z4pO3zcCfzJW2uH9ilV5HjuDVZtkUBk+m5AlkPfehUfnvpMyczR5L851EtVxDpRlGdSydCNc6U2dT2p+CcAkma1D5h7MqxUjxB7fi3x9D1Zohk4zqc1cPUnu20ONoNTWti2YcQsY41mR3Lg+2ZRxaODyKBf7a74k8R1dqUy5FAyJctdU1xX4cXI74Q5Zo7cicbG5HG2mB5SS2P1OUzic2+GGZWLGeqmGVa0gC1Fg/cLmGlihQAxKDe32F3u6kwIDAQAB",
   "action": {
     "default_title": "Flyby",
     "default_popup": "src/popup.html",
@@ -33,11 +34,5 @@
   "host_permissions": [
     "https://www.googleapis.com/*",
     "<all_urls>"
-  ],
-  "oauth2": {
-    "client_id": "REPLACE_WITH_YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
-    "scopes": [
-      "https://www.googleapis.com/auth/calendar.events.readonly"
-    ]
-  }
+  ]
 }

@@ -65,61 +65,42 @@ git clone https://github.com/NamanSharma2112/Flyby.git
 Keep the folder somewhere stable — for an unpacked extension Chrome derives the
 extension ID from the folder path, and the OAuth client below is tied to that ID.
 
-### 2. Load it in Chrome to discover its ID
+### 2. Load it in Chrome
 
 1. Open `chrome://extensions`.
 2. Turn on **Developer mode** (top-right).
 3. Click **Load unpacked** and select the `Flyby` folder.
-4. Copy the **ID** shown on the Flyby card (a long string like
-   `abcdefghijklmnopabcdefghijklmnop`).
 
-The extension loads, but connecting will fail until you finish step 4 — that's
-expected.
+Flyby's extension ID is pinned by the manifest `key`, so it's the same on every
+machine and never changes if you move the folder.
 
-### 3. Create a Google OAuth client
+### 3. One-time Google setup
 
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and create
-   or pick a project.
-2. **APIs & Services → Library** → search **Google Calendar API** → **Enable**.
-3. **APIs & Services → OAuth consent screen**:
-   - User type **External** is fine.
-   - Fill in the required app name / support email.
-   - Under **Test users**, add your own Google address. (In "Testing" mode you
-     don't need Google to verify the app — only your test users can sign in,
-     which is all you need.)
-   - Add the scope `https://www.googleapis.com/auth/calendar.events.readonly`.
-4. **APIs & Services → Credentials → Create credentials → OAuth client ID**:
-   - **Application type: Chrome Extension** (older consoles label this
-     *Chrome App*).
-   - Paste the **extension ID from step 2** into the *Item ID* / *Application ID*
-     field.
-   - Create it and copy the **Client ID** (ends in `.apps.googleusercontent.com`).
+Google won't let any app read a calendar without a free **Client ID**. Open the
+Flyby popup — it walks you through it, and **Open the step-by-step guide** has
+the full version:
 
-### 4. Drop the client ID into the manifest
+1. **Copy** the **Authorized redirect URI** shown in the popup.
+2. [Google Cloud Console](https://console.cloud.google.com/) → create a project.
+3. **APIs & Services → Library** → enable **Google Calendar API**.
+4. **OAuth consent screen** → **External**, add yourself under **Test users**.
+5. **Credentials → Create credentials → OAuth client ID** → **Web application** →
+   paste the redirect URI under **Authorized redirect URIs**.
+6. Paste the resulting **Client ID** into the popup → **Save & continue**.
 
-Open `manifest.json` and replace the placeholder in `oauth2.client_id`:
+### 4. Sign in
 
-```json
-"oauth2": {
-  "client_id": "YOUR_CLIENT_ID.apps.googleusercontent.com",
-  "scopes": ["https://www.googleapis.com/auth/calendar.events.readonly"]
-}
-```
-
-Back on `chrome://extensions`, click the **reload** ↻ icon on the Flyby card.
-
-### 5. Connect and fly
-
-Click the Flyby toolbar icon → **Connect Google Calendar** → approve the
-read-only request. Pick your lead times, then hit **✈️ Send a test flight** to see
-the plane cross your current tab right away.
+Click **Sign in with Google**, pick your account, approve the read-only request.
+Flyby connects itself, shows the account you're signed in as, and loads your
+schedule immediately. Hit **✈️ Send a test flight** on any normal website to watch
+the plane.
 
 ---
 
 ## How it works
 
 ```
-manifest.json          MV3 manifest, OAuth config, permissions
+manifest.json          MV3 manifest, pinned extension key, permissions
 src/background.js       service worker — OAuth, 1-min calendar poll, fires the plane
 src/content.js          injected on demand — draws & animates the plane (Shadow DOM)
 src/popup.html/.js/.css settings, connection, onboarding, upcoming events, test button
@@ -131,9 +112,11 @@ tools/build_zip.py      package a load-unpacked-ready flyby-<version>.zip
 **Build a distributable zip:** `python3 tools/build_zip.py` → `flyby-<version>.zip`
 (unzips to a `flyby/` folder you can Load unpacked).
 
-- **Auth** uses `chrome.identity.getAuthToken`, so Chrome manages and refreshes
-  the token for background polling. A `401` transparently clears the cached token
-  and re-mints one.
+- **Auth** is a real sign-in: `chrome.identity.launchWebAuthFlow` against Google,
+  with the Client ID stored in extension settings (entered once in the popup, so
+  no file editing). Tokens are cached with their expiry and refreshed silently;
+  a `401` drops the token and re-mints one. The manifest `key` pins the extension
+  ID so the OAuth redirect URI is stable forever.
 - **Polling** is a once-a-minute `chrome.alarms` job. It pulls timed events from
   your **primary** calendar for the next hour and, when one first crosses a
   configured lead time, fires the plane exactly once per event/lead-time (tracked
@@ -171,7 +154,7 @@ token and revokes the grant.
 
 ## Browser support
 
-Any Chromium browser with Manifest V3 and `chrome.identity.getAuthToken` —
+Any Chromium browser with Manifest V3 and `chrome.identity.launchWebAuthFlow` —
 Chrome, Edge, Brave, Arc, Vivaldi, etc. Firefox uses a different identity API and
 isn't supported as-is.
 

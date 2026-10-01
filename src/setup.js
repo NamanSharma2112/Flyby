@@ -1,17 +1,19 @@
-// Fills in the live extension ID and wires the copy buttons on the setup page.
+// Fills in the live redirect URI and wires the copy button on the setup page.
 // Guarded so the page also works if opened as a plain file (outside the extension).
 (function () {
-  const hasRuntime = typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id;
-  const id = hasRuntime ? chrome.runtime.id : "";
+  const inExtension =
+    typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id && chrome.identity;
 
-  if (id) {
+  const redirect = inExtension ? chrome.identity.getRedirectURL() : "";
+
+  if (redirect) {
     const el = document.getElementById("extId");
-    if (el) el.textContent = id;
+    if (el) el.textContent = redirect;
   }
 
   document.querySelectorAll("button.copy[data-copy]").forEach((btn) => {
     btn.addEventListener("click", async () => {
-      const value = btn.getAttribute("data-copy") === "id" ? id : btn.getAttribute("data-copy");
+      const value = btn.getAttribute("data-copy") === "id" ? redirect : btn.getAttribute("data-copy");
       if (!value) return;
       try {
         await navigator.clipboard.writeText(value);

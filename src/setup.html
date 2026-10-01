@@ -106,19 +106,20 @@
 
       <ol class="steps">
         <li>
-          <h3>Copy this extension's ID</h3>
-          <p class="muted">Flyby is already loaded, so it has an ID. Copy it — you'll paste it into Google in step 5.</p>
+          <h3>Open Flyby and copy the redirect URI</h3>
+          <p class="muted">Click the Flyby icon. The setup card shows an <b>Authorized redirect URI</b>
+             with a Copy button — you'll paste it into Google in step 5.</p>
           <div class="idrow">
-            <div class="idbox" id="extId">(open this page from the Flyby popup to see your ID)</div>
-            <button class="copy" data-copy="id">Copy ID</button>
+            <div class="idbox" id="extId">https://&lt;your-extension-id&gt;.chromiumapp.org/</div>
+            <button class="copy" data-copy="id">Copy</button>
           </div>
-          <p class="muted">You can also find it at <code>chrome://extensions</code> on the Flyby card.</p>
+          <p class="muted">This address is fixed for Flyby, so you only ever set it up once.</p>
         </li>
 
         <li>
           <h3>Create a Google Cloud project</h3>
           <p>Open the <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Google Cloud Console</a>
-             and create a project (any name, e.g. “Flyby”). Free.</p>
+             and create a project (any name, e.g. &ldquo;Flyby&rdquo;). It's free.</p>
         </li>
 
         <li>
@@ -130,32 +131,31 @@
           <h3>Set up the consent screen</h3>
           <p>Go to <b>APIs &amp; Services → OAuth consent screen</b>. Choose <b>External</b>, add an app
              name and your email, and under <b>Test users</b> add your own Google address.</p>
-          <p class="muted">Testing mode is fine — it means only you can sign in, which is all you need. Add the scope
-             <code>.../auth/calendar.events.readonly</code> if it asks.</p>
+          <p class="muted">Testing mode is fine — it means only the accounts you list can sign in, which is
+             all you need.</p>
         </li>
 
         <li>
           <h3>Create the OAuth Client ID</h3>
           <p>Go to <b>APIs &amp; Services → Credentials → Create credentials → OAuth client ID</b>.</p>
-          <p>Application type: <span class="pill">Chrome Extension</span> (older consoles call it <i>Chrome app</i>).
-             Paste your extension ID from step 1 into the <b>Item ID</b> field, then create it.</p>
+          <p>Application type: <span class="pill">Web application</span>. Under
+             <b>Authorized redirect URIs</b> click <b>Add URI</b> and paste the address from step 1.
+             Then click <b>Create</b>.</p>
         </li>
 
         <li>
           <h3>Paste the Client ID into Flyby</h3>
-          <p>Copy the new <b>Client ID</b> (it ends in <code>.apps.googleusercontent.com</code>) and put it in
-             <code>manifest.json</code>:</p>
-          <pre>"oauth2": {
-  "client_id": "YOUR_CLIENT_ID.apps.googleusercontent.com",
-  "scopes": ["https://www.googleapis.com/auth/calendar.events.readonly"]
-}</pre>
-          <p>Save the file, then on <code>chrome://extensions</code> click the <b>reload</b> ↻ icon on Flyby.</p>
+          <p>Copy the <b>Client ID</b> Google shows you (it ends in
+             <code>.apps.googleusercontent.com</code>), paste it into the Flyby popup's
+             <b>Client ID</b> box, and hit <b>Save &amp; continue</b>.</p>
+          <p class="muted">No files to edit and nothing to reload — Flyby stores it for you.</p>
         </li>
 
         <li>
-          <h3>Connect and fly</h3>
-          <p>Click the Flyby icon → <b>Connect Google Calendar</b> → approve. Pick your lead times
-             (5 or 10 minutes), and you're done.</p>
+          <h3>Sign in</h3>
+          <p>Click <b>Sign in with Google</b>, pick your account and approve the read-only request.
+             Flyby connects itself, shows the account you signed in as, and loads your schedule
+             straight away.</p>
         </li>
       </ol>
 
