@@ -134,6 +134,12 @@ tools/build_zip.py      package a load-unpacked-ready flyby-<version>.zip
 
 ---
 
+## Shipping it to other people
+
+See **[DEPLOY.md](DEPLOY.md)** — a plain-language guide to publishing on the
+Chrome Web Store, including the Google OAuth verification you need for public
+release. Store screenshots are in `docs/store/`.
+
 ## Privacy
 
 Flyby runs entirely on your machine and only ever contacts Google's Calendar API

@@ -14,7 +14,7 @@ import zipfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PREFIX = "flyby"  # top-level folder inside the archive
 
-INCLUDE_FILES = ["manifest.json", "README.md", "INSTALL.md", "LICENSE"]
+INCLUDE_FILES = ["manifest.json", "README.md", "INSTALL.md", "DEPLOY.md", "PRIVACY.md", "LICENSE"]
 INCLUDE_DIRS = ["src", "icons"]
 SKIP = {".DS_Store", "Thumbs.db"}
 

@@ -8,6 +8,9 @@
 //   * Answer messages from the popup (connect / disconnect / save settings /
 //     test flight / manual refresh).
 
+// Build config (ships an optional Client ID for public releases).
+try { importScripts("config.js"); } catch (_) { /* optional */ }
+
 const ALARM_NAME = "flyby-poll";
 const POLL_MINUTES = 1;
 const CALENDAR_ID = "primary";
@@ -27,7 +30,12 @@ const DEFAULT_SETTINGS = {
 
 async function getSettings() {
   const stored = await chrome.storage.sync.get("settings");
-  return { ...DEFAULT_SETTINGS, ...(stored.settings || {}) };
+  const merged = { ...DEFAULT_SETTINGS, ...(stored.settings || {}) };
+  // A Client ID baked into this build (public releases) is used whenever the
+  // user hasn't entered one themselves, so they never see the setup card.
+  const builtIn = (self.FLYBY_CONFIG && self.FLYBY_CONFIG.clientId) || "";
+  if (!String(merged.clientId || "").trim() && builtIn) merged.clientId = builtIn;
+  return merged;
 }
 
 async function setSettings(patch) {
